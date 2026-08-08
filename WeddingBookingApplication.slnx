@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="WeddingBookingApplication.Console/WeddingBookingApplication.Console.csproj" Id="74f7ac7f-0d25-4222-a473-6270b97f0ec9" />
+  <Project Path="WeddingBookingApplication.Database/WeddingBookingApplication.Database.csproj" Id="26034721-0a16-491b-a49b-a42393371da3" />
+  <Project Path="WeddingBookingApplication.Domain/WeddingBookingApplication.Domain.csproj" Id="e5d8e1a2-8d8f-4dcb-85e4-2943a1cd56f3" />
+  <Project Path="WeddingBookingApplication.WebApi/WeddingBookingApplication.WebApi.csproj" Id="56c5d223-4df6-4a87-8574-55694e31366d" />
+  <Project Path="WeddingBookingApplication.WindowForm/WeddingBookingApplication.WindowForm.csproj" Id="afdf096f-df03-42c1-b67a-b9109b3f0d6c" />
+</Solution>
