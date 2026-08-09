@@ -7,14 +7,9 @@ using WeddingBookingApplication.WindowForm.Helpers;
 
 namespace WeddingBookingApplication.WindowForm.Forms;
 
-/// <summary>
-/// Top-level application shell: dark side-navigation + swappable content area.
-/// AutoScaleMode.Dpi (baseline 96 F) ensures every ContainerControl scales
-/// proportionally on high-DPI monitors, per the MS AutoScale documentation.
-/// </summary>
+
 public class MainShellForm : Form
 {
-    // ── Controls ────────────────────────────────────────────────────────────
     private Panel          _navPanel     = null!;
     private Panel          _contentPanel = null!;
     private Label          _statusLabel  = null!;
@@ -24,7 +19,6 @@ public class MainShellForm : Form
 
     private readonly System.Windows.Forms.Timer _clock = new() { Interval = 1_000 };
 
-    // ── Nav items ───────────────────────────────────────────────────────────
     private static readonly (string Icon, string Label)[] NavItems =
     {
         ("🏠", "Dashboard"),
@@ -37,10 +31,9 @@ public class MainShellForm : Form
 
     public MainShellForm()
     {
-        // AutoScaleMode and AutoScaleDimensions must be set BEFORE InitializeComponent
-        // or any control is added, per the MS AutoScale documentation.
+
         AutoScaleMode       = AutoScaleMode.Dpi;
-        AutoScaleDimensions = new SizeF(96F, 96F);   // design-time baseline = 100 % DPI
+        AutoScaleDimensions = new SizeF(96F, 96F);  
 
         BuildUI();
         NavigateTo(0);
@@ -48,16 +41,13 @@ public class MainShellForm : Form
         _clock.Start();
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // UI Construction
-    // ────────────────────────────────────────────────────────────────────────
     private void BuildUI()
     {
         SuspendLayout();
 
         Text           = "💍 Wedding Booking Management";
         Size           = new Size(1340, 840);
-        MinimumSize    = new Size(1100, 680);   // prevents controls becoming unusable
+        MinimumSize    = new Size(1100, 680);   
         StartPosition  = FormStartPosition.CenterScreen;
         BackColor      = UITheme.Background;
         ForeColor      = UITheme.TextPrimary;
@@ -68,11 +58,10 @@ public class MainShellForm : Form
         _contentPanel = new Panel { Dock = DockStyle.Fill, BackColor = UITheme.Background };
         var statusBar = BuildStatusBar();
 
-        // Dock order matters: Fill must be added BEFORE Left/Bottom docked panels
-        // so WinForms docking engine processes them in the correct z-order.
-        Controls.Add(_contentPanel);   // Fill
-        Controls.Add(statusBar);       // Bottom
-        Controls.Add(_navPanel);       // Left
+
+        Controls.Add(_contentPanel);   
+        Controls.Add(statusBar);       
+        Controls.Add(_navPanel);       
 
         ResumeLayout(false);
         PerformLayout();
@@ -92,10 +81,7 @@ public class MainShellForm : Form
             e.Graphics.DrawLine(p, nav.Width - 1, 0, nav.Width - 1, nav.Height);
         };
 
-        // ── Logo area ─────────────────────────────────────────────────────
-        // BEFORE: three Labels with absolute Left/Top → clipped at high DPI.
-        // AFTER:  a TableLayoutPanel (2-col: icon | text stack) so the layout
-        //         engine handles positioning and DPI scaling automatically.
+
         var logoPanel = new Panel
         {
             Height    = 72,
@@ -109,7 +95,6 @@ public class MainShellForm : Form
             e.Graphics.DrawLine(p, 16, logoPanel.Height - 1, logoPanel.Width - 16, logoPanel.Height - 1);
         };
 
-        // Two-column TLP: [icon col 44 px fixed] [text col fills rest]
         var logoTlp = new TableLayoutPanel
         {
             Dock        = DockStyle.Fill,
@@ -132,7 +117,6 @@ public class MainShellForm : Form
             BackColor = Color.Transparent
         };
 
-        // Vertical stack for title + subtitle
         var textStack = new TableLayoutPanel
         {
             Dock        = DockStyle.Fill,
@@ -172,8 +156,6 @@ public class MainShellForm : Form
         logoTlp.Controls.Add(textStack, 1, 0);
         logoPanel.Controls.Add(logoTlp);
 
-        // ── Nav Buttons ───────────────────────────────────────────────────
-        // Buttons use Dock = Top so they already stretch to the nav panel width.
         _navBtns = new Button[NavItems.Length];
         var btnContainer = new Panel
         {
@@ -206,10 +188,8 @@ public class MainShellForm : Form
             btnContainer.Controls.Add(btn);
         }
 
-        // Reverse child index so DockStyle.Top stacks them top-to-bottom
         foreach (var b in _navBtns.Reverse()) btnContainer.Controls.SetChildIndex(b, 0);
 
-        // ── Version Label ─────────────────────────────────────────────────
         var ver = new Label
         {
             Text      = "v1.0.0  •  net8.0-windows",
@@ -243,7 +223,7 @@ public class MainShellForm : Form
         _statusLabel = new Label
         {
             AutoSize  = false,
-            Dock      = DockStyle.Fill,   // CHANGED: Fill instead of fixed Width so it uses all leftover space
+            Dock      = DockStyle.Fill,   
             Height    = 30,
             Font      = new Font("Segoe UI", 8f),
             ForeColor = UITheme.TextMuted,
@@ -265,7 +245,6 @@ public class MainShellForm : Form
             Padding   = new Padding(0, 0, 12, 0)
         };
 
-        // Right label must be added first so Dock=Right takes its slice before Fill
         bar.Controls.AddRange([rightLbl, _statusLabel]);
         return bar;
     }
@@ -273,9 +252,6 @@ public class MainShellForm : Form
     private void UpdateClock() =>
         _statusLabel.Text = DateTime.Now.ToString("dddd, MMMM dd yyyy   •   HH:mm:ss");
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Navigation
-    // ────────────────────────────────────────────────────────────────────────
     public void NavigateTo(int index)
     {
         if (_activeIdx == index) return;
@@ -326,18 +302,11 @@ public class MainShellForm : Form
         _contentPanel.ResumeLayout();
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Dashboard
-    // ────────────────────────────────────────────────────────────────────────
     private UserControl BuildDashboard()
     {
         var dash = new UserControl { BackColor = UITheme.Background };
         dash.SuspendLayout();
 
-        // ── Heading strip (Top-docked, fixed height) ─────────────────────
-        // BEFORE: heading/sub were absolutely positioned at Top = 40/80.
-        // AFTER:  a dedicated top panel so the FlowLayoutPanel card area
-        //         starts cleanly below and does not overlap the heading.
         var headingPanel = new Panel
         {
             Dock      = DockStyle.Top,
@@ -362,15 +331,9 @@ public class MainShellForm : Form
             AutoSize  = true,
             Dock      = DockStyle.Top
         };
-        // Sub added first so it appears below heading (DockStyle.Top stacks)
         headingPanel.Controls.Add(sub);
         headingPanel.Controls.Add(heading);
 
-        // ── Cards — FlowLayoutPanel (replaces fixed-coordinate grid) ─────
-        // BEFORE: Left = startX + col * (cardW + colGap) — static, never reflows.
-        // AFTER:  FlowLayoutPanel WrapContents=true → cards reflow to a new row
-        //         automatically when the content area is too narrow.
-        //         Per the MS FlowLayoutPanel walkthrough docs.
         var cardFlow = new FlowLayoutPanel
         {
             Dock          = DockStyle.Fill,
@@ -405,78 +368,100 @@ public class MainShellForm : Form
 
     private Panel BuildDashboardCard(string icon, string title, string desc, int navIdx, Color accent)
     {
-        // Cards keep a fixed Width/Height (260×140) — they don't grow individually.
-        // The FlowLayoutPanel wraps them to new rows instead.
-        // Margin provides the column gap (right=20) and row gap (bottom=20).
         var card = new Panel
         {
-            Width     = 260,
-            Height    = 140,
+            Width = 260,
+            Height = 140,
             BackColor = UITheme.Surface,
-            Cursor    = Cursors.Hand,
-            Margin    = new Padding(0, 0, 20, 20)
+            Cursor = Cursors.Hand,
+            Margin = new Padding(0, 0, 20, 20)
         };
+
         var localAccent = accent;
+
         card.Paint += (_, e) =>
         {
             var g = e.Graphics;
-            using var borderPen  = new Pen(UITheme.Border, 1);
+            using var borderPen = new Pen(UITheme.Border, 1);
             g.DrawRectangle(borderPen, 0, 0, card.Width - 1, card.Height - 1);
             using var accentBrush = new SolidBrush(localAccent);
             g.FillRectangle(accentBrush, 0, card.Height - 4, card.Width, 4);
         };
 
+        var header = new TableLayoutPanel
+        {
+            ColumnCount = 2,
+            RowCount = 1,
+            Dock = DockStyle.Top,
+            Height = 52,
+            Padding = new Padding(14, 12, 12, 0),
+            BackColor = Color.Transparent,
+            Margin = new Padding(0)
+        };
+        header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 42F)); // fixed icon column
+        header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+
         var lblIcon = new Label
         {
-            Text      = icon,
-            Font      = new Font("Segoe UI", 20f),
+            Text = icon,
+            Font = new Font("Segoe UI", 18f),
             ForeColor = UITheme.TextPrimary,
-            AutoSize  = true,
-            Left      = 16,
-            Top       = 14,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleCenter,
             BackColor = Color.Transparent
         };
+
         var lblTitle = new Label
         {
-            Text         = title,
-            Font         = UITheme.FontSubHeading,
-            ForeColor    = UITheme.TextPrimary,
-            AutoSize     = true,      // CHANGED: AutoSize so text never clips
-            Left         = 72,
-            Top          = 20,
-            BackColor    = Color.Transparent,
-            AutoEllipsis = false
+            Text = title,
+            Font = UITheme.FontSubHeading,
+            ForeColor = UITheme.TextPrimary,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleLeft,
+            BackColor = Color.Transparent,
+            AutoEllipsis = true
         };
+
+        header.Controls.Add(lblIcon, 0, 0);
+        header.Controls.Add(lblTitle, 1, 0);
+
         var lblDesc = new Label
         {
-            Text         = desc,
-            Font         = UITheme.FontSmall,
-            ForeColor    = UITheme.TextMuted,
-            AutoSize     = false,
-            Width        = card.Width - 28,  // leave 12 px margin each side
-            Height       = 36,
-            Left         = 12,
-            Top          = 68,
-            BackColor    = Color.Transparent,
-            AutoEllipsis = true             // graceful fallback if text is very long
+            Text = desc,
+            Font = UITheme.FontSmall,
+            ForeColor = UITheme.TextMuted,
+            AutoSize = false,
+            Dock = DockStyle.Top,
+            Height = 40,
+            Padding = new Padding(16, 4, 12, 0),
+            BackColor = Color.Transparent,
+            AutoEllipsis = true
         };
+
         var lblGo = new Label
         {
-            Text      = "Click to manage  →",
-            Font      = new Font("Segoe UI", 8f, FontStyle.Bold),
+            Text = "Click to manage →",
+            Font = new Font("Segoe UI", 8f, FontStyle.Bold),
             ForeColor = localAccent,
-            AutoSize  = true,
-            Left      = 12,
-            Top       = 112,
+            AutoSize = false,
+            Dock = DockStyle.Bottom,
+            Height = 28,
+            Padding = new Padding(16, 0, 12, 8),
+            TextAlign = ContentAlignment.MiddleLeft,
             BackColor = Color.Transparent
         };
 
-        card.Controls.AddRange([lblIcon, lblTitle, lblDesc, lblGo]);
+        card.Controls.Add(lblGo);     
+        card.Controls.Add(lblDesc);
+        card.Controls.Add(header);    
 
-        // Wire click on every child label so the whole card is clickable
-        foreach (Control c in card.Controls)
+        void WireClick(Control c)
+        {
             c.Click += (_, _) => NavigateTo(navIdx);
-        card.Click += (_, _) => NavigateTo(navIdx);
+            foreach (Control child in c.Controls)
+                WireClick(child);
+        }
+        WireClick(card);
 
         return card;
     }

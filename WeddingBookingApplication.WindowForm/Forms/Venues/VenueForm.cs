@@ -64,17 +64,33 @@ public class VenueForm : UserControl
         var split = UITheme.BuildSplit(out var left, out var right);
 
         // Grid (left panel)
+        // Grid (left panel)
         _grid = new DataGridView { Dock = DockStyle.Fill };
         UITheme.StyleDataGridView(_grid);
+
+        // Critical: stop auto-generating columns
+        _grid.AutoGenerateColumns = false;
+
+        _grid.AllowUserToResizeRows = false;
+        _grid.RowHeadersVisible = false;
+        _grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        _grid.MultiSelect = false;
+        _grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+        _grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+        _grid.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+
         _grid.Columns.AddRange(
-            Col("VenueId",   "ID",       55,  false),
-            Col("VendorId",  "Vendor ID", 75, false),
-            Col("VenueName", "Name",      160),
-            Col("Location",  "Location",  140),
-            Col("Capacity",  "Capacity",  70,  false),
-            Col("Price",     "Price",     90,  false),
-            Col("IsActive",  "Active",    55,  false)
+            Col("VenueId", "ID", 55),
+            Col("VendorId", "Vendor ID", 80),
+            Col("VenueName", "Name", 160),
+            Col("Location", "Location", 140),
+            Col("Capacity", "Capacity", 80),
+            Col("Price", "Price", 100),
+            Col("IsActive", "Active", 70),
+            Col("Description", "Description", 180),
+            Col("CreatedDate", "CreatedDate", 140, DataGridViewAutoSizeColumnMode.Fill)  // only this one fills
         );
+
         _grid.SelectionChanged += Grid_SelectionChanged;
         left.Controls.Add(_grid);
 
@@ -292,11 +308,21 @@ public class VenueForm : UserControl
         _lblStatus.ForeColor = col == Color.Transparent ? UITheme.TextPrimary : col;
     }
 
-    private static DataGridViewTextBoxColumn Col(string prop, string hdr, int w = 120, bool fill = true)
+    private static DataGridViewTextBoxColumn Col(
+    string prop,
+    string header,
+    int width,
+    DataGridViewAutoSizeColumnMode autoSize = DataGridViewAutoSizeColumnMode.None)
     {
-        var c = new DataGridViewTextBoxColumn { Name = prop, DataPropertyName = prop, HeaderText = hdr, Width = w };
-        if (fill) c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-        return c;
+        return new DataGridViewTextBoxColumn
+        {
+            Name = prop,
+            DataPropertyName = prop,
+            HeaderText = header,
+            Width = width,
+            AutoSizeMode = autoSize,
+            MinimumWidth = 40
+        };
     }
 
     protected override void Dispose(bool disposing) { if (disposing) _db.Dispose(); base.Dispose(disposing); }

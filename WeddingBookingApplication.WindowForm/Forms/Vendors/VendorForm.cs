@@ -5,26 +5,14 @@ using WeddingBookingApplication.WindowForm.Helpers;
 
 namespace WeddingBookingApplication.WindowForm.Forms.Vendors;
 
-/// <summary>
-/// Full CRUD panel for Vendors. Split-view: DataGridView on the left,
-/// detail/edit form on the right.
-///
-/// Responsive changes (vs old version):
-/// • Detail panel is now a scrollable Panel → TableLayoutPanel (1 col, 100%)
-///   so every TextBox/ComboBox stretches with the SplitContainer panel width.
-/// • Action buttons are in a bottom-docked FlowLayoutPanel — never overlap.
-/// • Header buttons anchored Right|Top — stay right-aligned on resize.
-/// </summary>
+
 public class VendorForm : UserControl
 {
-    // ── Services ────────────────────────────────────────────────────────────
     private readonly AppDbContext   _db      = DbContextFactory.Create();
     private VendorService           _service = null!;
 
-    // ── State ───────────────────────────────────────────────────────────────
     private int? _selectedId;
 
-    // ── Controls ────────────────────────────────────────────────────────────
     private DataGridView _grid          = null!;
     private Label        _detailHeading = null!;
 
@@ -47,47 +35,43 @@ public class VendorForm : UserControl
         LoadGrid();
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Build UI
-    // ────────────────────────────────────────────────────────────────────────
+   
     private void BuildUI()
     {
         SuspendLayout();
         BackColor      = UITheme.Background;
         DoubleBuffered = true;
 
-        // ── Page Header ──────────────────────────────────────────────────
         var header  = UITheme.BuildPageHeader("🏢", "Vendors", "Manage wedding vendors");
-        // Buttons are Anchor=Right|Top; UITheme.AddHeaderButton wires the Resize handler
         var btnAdd     = UITheme.AddHeaderButton(header, "+  Add New",   UITheme.Accent,       130);
         var btnRefresh = UITheme.AddHeaderButton(header, "↺  Refresh",   UITheme.SurfaceLight, 244);
         btnAdd.Click     += (_, _) => ClearDetail(isNew: true);
         btnRefresh.Click += (_, _) => LoadGrid();
 
-        // ── Split Layout ──────────────────────────────────────────────────
         var split = UITheme.BuildSplit(out var gridPanel, out var detailHost,
             panel1MinSize: 400, panel2MinSize: 300);
 
-        // ── Left: DataGridView ────────────────────────────────────────────
         _grid = new DataGridView { Dock = DockStyle.Fill };
         UITheme.StyleDataGridView(_grid);
+        _grid.AllowUserToResizeRows = false;
+        _grid.RowHeadersVisible = false;
+        _grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        _grid.MultiSelect = false;
+        _grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+        _grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+        _grid.DefaultCellStyle.WrapMode = DataGridViewTriState.False; 
         _grid.Columns.AddRange(
-            Col("VendorId",   "ID",          60,  false),
-            Col("VendorName", "Vendor Name", 160),
-            Col("Phone",      "Phone",       110),
-            Col("Email",      "Email",       180),
-            Col("Address",    "Address",     150),
-            Col("StatusName", "Status",      80)
+        Col("VendorId", "ID", 55, DataGridViewAutoSizeColumnMode.None),
+        Col("VendorName", "Vendor Name", 160, DataGridViewAutoSizeColumnMode.None),
+        Col("Phone", "Phone", 115, DataGridViewAutoSizeColumnMode.None),
+        Col("Email", "Email", 180, DataGridViewAutoSizeColumnMode.None),
+        Col("Address", "Address", 140, DataGridViewAutoSizeColumnMode.None),
+        Col("StatusName", "Status", 90, DataGridViewAutoSizeColumnMode.Fill)  // only this one fills
         );
         _grid.SelectionChanged += Grid_SelectionChanged;
         gridPanel.Controls.Add(_grid);
 
-        // ── Right: Scrollable detail + TableLayoutPanel fields ────────────
-        // BEFORE: Panel with absolute Left/Top/Width=260 on every field.
-        // AFTER:  BuildDetailForm returns a scrolling Panel containing a
-        //         single-column TableLayoutPanel. AddDetailRow adds each
-        //         label+control pair; the column style is 100% so controls
-        //         always fill the panel width as the SplitContainer moves.
+      
         var (scrollPanel, tbl) = UITheme.BuildDetailForm(detailHost);
 
         _detailHeading = new Label
@@ -117,7 +101,6 @@ public class VendorForm : UserControl
         UITheme.AddDetailRow(tbl, "Description",    _txtDesc);
         UITheme.AddDetailRow(tbl, "Status *",       _cbStatus);
 
-        // Status banner (below the table, inside scroll panel)
         _lblStatus = new Label
         {
             AutoSize  = false,
@@ -130,9 +113,7 @@ public class VendorForm : UserControl
             Padding   = new Padding(20, 0, 0, 0)
         };
 
-        // ── Action buttons — bottom-docked FlowLayoutPanel ────────────────
-        // BEFORE: buttons at absolute Left = 20, 138, 246 → overlap when panel narrows.
-        // AFTER:  FlowLayoutPanel (Dock=Bottom) manages horizontal spacing automatically.
+
         _btnSave   = new Button { Text = "💾  Save",    Width = 110, Height = 36 };
         _btnClear  = new Button { Text = "✕  Clear",   Width = 100, Height = 36 };
         _btnDelete = new Button { Text = "🗑  Delete",  Width = 100, Height = 36 };
@@ -146,9 +127,7 @@ public class VendorForm : UserControl
 
         UITheme.BuildActionButtonRow(scrollPanel, _btnSave, _btnClear, _btnDelete);
 
-        // Status label sits just above the button row — add it after button row
-        // so it renders on top (Bottom-docked button row is allocated first,
-        // then the status label docks to the remaining Bottom space).
+
         _lblStatus.Dock = DockStyle.Bottom;
         scrollPanel.Controls.Add(_lblStatus);
 
@@ -159,9 +138,6 @@ public class VendorForm : UserControl
         PerformLayout();
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Control factories
-    // ────────────────────────────────────────────────────────────────────────
     private static TextBox MakeTextBox(bool multiLine = false)
     {
         var tb = new TextBox
@@ -181,25 +157,25 @@ public class VendorForm : UserControl
         return cb;
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Helpers
-    // ────────────────────────────────────────────────────────────────────────
-    private static DataGridViewTextBoxColumn Col(string prop, string header, int w = 120, bool fill = true)
+
+    private static DataGridViewTextBoxColumn Col(
+     string prop,
+     string header,
+     int width,
+     DataGridViewAutoSizeColumnMode autoSize = DataGridViewAutoSizeColumnMode.None)
     {
-        var c = new DataGridViewTextBoxColumn
+        return new DataGridViewTextBoxColumn
         {
-            Name             = prop,
+            Name = prop,
             DataPropertyName = prop,
-            HeaderText       = header,
-            Width            = w,
+            HeaderText = header,
+            Width = width,
+            AutoSizeMode = autoSize,
+            MinimumWidth = 40          
         };
-        if (fill) c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-        return c;
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Data Operations
-    // ────────────────────────────────────────────────────────────────────────
+
     private void LoadGrid()
     {
         try

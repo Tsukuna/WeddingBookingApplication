@@ -242,26 +242,55 @@ public static class UITheme
     /// title and subtitle. Returns the panel so callers can add action buttons.
     /// Per MS docs: header is Top-docked so it never participates in resize math.
     /// </summary>
-    public static Panel BuildPageHeader(string icon, string title, string sub)
+    public static Panel BuildPageHeader(
+       string icon,
+       string title,
+       string subtitle)
     {
-        var hdr = new Panel
+        var header = new Panel
         {
-            Dock      = DockStyle.Top,
-            Height    = 64,
-            BackColor = Surface,
-            Padding   = new Padding(20, 0, 20, 0)
+            Height = 63,
+            Dock = DockStyle.Top,
+            Padding = new Padding(0)
         };
-        hdr.Paint += (_, e) =>
+
+        var lblIcon = new Label
         {
-            using var p = new Pen(Border, 1);
-            e.Graphics.DrawLine(p, 0, hdr.Height - 1, hdr.Width, hdr.Height - 1);
+            Text = icon,
+            AutoSize = true,
+            Font = new Font("Segoe UI Emoji", 22F),
+            Location = new Point(10, 5)
         };
-        hdr.Controls.AddRange([
-            new Label { Text = icon,  Font = new Font("Segoe UI", 18f), ForeColor = TextPrimary, AutoSize = true, Top = 14, Left = 20 },
-            new Label { Text = title, Font = FontHeading,               ForeColor = TextPrimary, AutoSize = true, Top = 18, Left = 72 },
-            new Label { Text = sub,   Font = FontSmall,                 ForeColor = TextMuted,   AutoSize = true, Top = 44, Left = 72 }
-        ]);
-        return hdr;
+
+        var lblTitle = new Label
+        {
+            Text = title,
+            Location = new Point(80, 5),
+            Width = 250,
+            Height = 30,
+            AutoSize = false,
+            Font = FontHeading,
+            ForeColor = TextPrimary,
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+
+        var lblSubtitle = new Label
+        {
+            Text = subtitle,
+            Location = new Point(80, 36),
+            Width = 250,
+            Height = 30,
+            AutoSize = false,
+            Font = FontSmall,
+            ForeColor = TextPrimary,
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+
+        header.Controls.Add(lblIcon);
+        header.Controls.Add(lblTitle);
+        header.Controls.Add(lblSubtitle);
+
+        return header;
     }
 
     /// <summary>

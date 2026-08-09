@@ -60,16 +60,30 @@ public class DecorationForm : UserControl
         var split = UITheme.BuildSplit(out var gridPanel, out var detailHost);
 
         // Grid
+        // Grid
         _grid = new DataGridView { Dock = DockStyle.Fill };
         UITheme.StyleDataGridView(_grid);
+
+        // Critical: prevent auto-generated columns
+        _grid.AutoGenerateColumns = false;
+
+        _grid.AllowUserToResizeRows = false;
+        _grid.RowHeadersVisible = false;
+        _grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        _grid.MultiSelect = false;
+        _grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+        _grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+        _grid.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+
         _grid.Columns.AddRange(
-            TxtCol("DecorationPackageId", "ID",          55,  false),
-            TxtCol("VendorId",            "Vendor ID",   80,  false),
-            TxtCol("PackageName",         "Package",     180),
-            TxtCol("Price",               "Price",       100, false),
-            TxtCol("Description",         "Description", 200),
-            TxtCol("IsActive",            "Active",      55,  false)
+            TxtCol("DecorationPackageId", "ID", 55),
+            TxtCol("VendorId", "Vendor ID", 80),
+            TxtCol("PackageName", "Package", 180),
+            TxtCol("Price", "Price", 100),
+            TxtCol("Description", "Description", 200),
+            TxtCol("IsActive", "Active", 70, DataGridViewAutoSizeColumnMode.Fill)  // only one Fill
         );
+
         _grid.SelectionChanged += Grid_SelectionChanged;
         gridPanel.Controls.Add(_grid);
 
@@ -246,11 +260,21 @@ public class DecorationForm : UserControl
         _lblStatus.ForeColor = col == Color.Transparent ? UITheme.TextPrimary : col;
     }
 
-    private static DataGridViewTextBoxColumn TxtCol(string prop, string hdr, int w = 120, bool fill = true)
+    private static DataGridViewTextBoxColumn TxtCol(
+    string prop,
+    string header,
+    int width,
+    DataGridViewAutoSizeColumnMode autoSize = DataGridViewAutoSizeColumnMode.None)
     {
-        var c = new DataGridViewTextBoxColumn { Name = prop, DataPropertyName = prop, HeaderText = hdr, Width = w };
-        if (fill) c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-        return c;
+        return new DataGridViewTextBoxColumn
+        {
+            Name = prop,
+            DataPropertyName = prop,
+            HeaderText = header,
+            Width = width,
+            AutoSizeMode = autoSize,
+            MinimumWidth = 40
+        };
     }
 
     protected override void Dispose(bool disposing) { if (disposing) _db.Dispose(); base.Dispose(disposing); }
