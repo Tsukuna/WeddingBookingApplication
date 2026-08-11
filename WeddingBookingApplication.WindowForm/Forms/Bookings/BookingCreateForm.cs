@@ -206,6 +206,7 @@ public class BookingCreateForm : Form
         AddLabeledField(table, 4, "Email Address", out _txtCustEmail);
 
         p.Controls.Add(table);
+        table.BringToFront();
         return p;
     }
 
@@ -278,6 +279,7 @@ public class BookingCreateForm : Form
         table.Controls.Add(_nudGuests, 0, 8);
 
         p.Controls.Add(table);
+        table.BringToFront();
         return p;
     }
 
@@ -293,6 +295,7 @@ public class BookingCreateForm : Form
         };
         UITheme.StyleCheckedListBox(_clbDecor);
         p.Controls.Add(_clbDecor);
+        _clbDecor.BringToFront();
         return p;
     }
 
@@ -308,6 +311,7 @@ public class BookingCreateForm : Form
         };
         UITheme.StyleCheckedListBox(_clbSvc);
         p.Controls.Add(_clbSvc);
+        _clbSvc.BringToFront();
         return p;
     }
 
@@ -366,6 +370,7 @@ public class BookingCreateForm : Form
         table.Controls.Add(_lblResult, 0, 9);
 
         p.Controls.Add(table);
+        table.BringToFront();
         return p;
     }
 
